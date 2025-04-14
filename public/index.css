@@ -1,0 +1,24 @@
+body {
+    background-color: #f4f6f9;
+  }
+  .container {
+    max-width: 800px;
+    margin-top: 50px;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+  h1, h2 {
+    color: #0056b3;
+  }
+  button {
+    border-radius: 20px;
+  }
+  .list-group-item {
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .list-group-item button {
+    border-radius: 20px;
+  }

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Despesas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="text-center mb-4">Calculadora de Despesas</h1>
+
+    <form id="form-despesa" class="mb-4">
+      <div class="mb-2">
+        <input type="text" id="descricao" class="form-control" placeholder="Descrição da despesa" required>
+      </div>
+      <div class="mb-2">
+        <input type="number" step="0.01" id="valor" class="form-control" placeholder="Valor (R$)" required>
+      </div>
+      <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary">Adicionar Despesa</button>
+        <button type="button" class="btn btn-danger" id="logout">Sair</button>
+      </div>
+    </form>
+
+    <h2>Despesas</h2>
+    <ul id="lista-despesas" class="list-group mb-3"></ul>
+
+    <h3 class="text-end">Total: R$ <span id="total">0.00</span></h3>
+  </div>
+
+  <script>
+    async function carregarDespesas() {
+      const res = await fetch('/api/despesas');
+      const despesas = await res.json();
+
+      const lista = document.getElementById('lista-despesas');
+      const totalSpan = document.getElementById('total');
+      lista.innerHTML = '';
+      let total = 0;
+
+      despesas.forEach(d => {
+        total += parseFloat(d.valor);
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+          ${d.descricao} - R$${parseFloat(d.valor).toFixed(2)} (${new Date(d.data).toLocaleDateString()})
+          <button class="btn btn-danger btn-sm" onclick="excluirDespesa(${d.id})">Excluir</button>
+        `;
+        lista.appendChild(li);
+      });
+
+      totalSpan.textContent = total.toFixed(2);
+    }
+
+    async function excluirDespesa(id) {
+      await fetch(`/api/despesas/${id}`, { method: 'DELETE' });
+      carregarDespesas();
+    }
+
+    document.getElementById('form-despesa').addEventListener('submit', async e => {
+      e.preventDefault();
+      const descricao = document.getElementById('descricao').value;
+      const valor = document.getElementById('valor').value;
+
+      await fetch('/api/despesas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descricao, valor })
+      });
+
+      document.getElementById('descricao').value = '';
+      document.getElementById('valor').value = '';
+      carregarDespesas();
+    });
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/';
+    });
+
+    carregarDespesas();
+  </script>
+</body>
+</html>
