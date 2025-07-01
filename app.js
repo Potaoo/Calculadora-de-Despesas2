@@ -33,4 +33,4 @@ app.get('/api/despesas', autenticar, despesasController.listarDespesas);
 app.post('/api/despesas', autenticar, despesasController.adicionarDespesa);
 app.delete('/api/despesas/:id', autenticar, despesasController.excluirDespesa);
 
-app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
+module.exports = app;
