@@ -4,33 +4,34 @@ const path = require('path');
 
 let db;
 
-if (process.env.NODE_ENV === 'test') {
-  // Use SQLite for testing
-  const dbPath = path.join(__dirname, 'test.db');
-  db = new sqlite3.Database(dbPath);
-  
-  // Initialize test database with tables
-  db.serialize(() => {
-    // Create usuarios table
-    db.run(`CREATE TABLE IF NOT EXISTS usuarios (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nome TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      senha TEXT NOT NULL
-    )`);
-    
-    // Create despesas table
-    db.run(`CREATE TABLE IF NOT EXISTS despesas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      descricao TEXT NOT NULL,
-      valor REAL NOT NULL,
-      usuario_id INTEGER NOT NULL,
-      data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
-    )`);
+function initTestTables() {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(`CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        senha TEXT NOT NULL
+      )`);
+      db.run(`CREATE TABLE IF NOT EXISTS despesas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        descricao TEXT NOT NULL,
+        valor REAL NOT NULL,
+        usuario_id INTEGER NOT NULL,
+        data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+      )`, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
   });
-  
-  // Wrap SQLite methods to match MySQL interface
+}
+
+if (process.env.NODE_ENV === 'test') {
+  // Use SQLite in-memory for testing
+  db = new sqlite3.Database(':memory:');
+  // Tables will be created in test setup
   db.query = function(sql, params = []) {
     return new Promise((resolve, reject) => {
       if (sql.toLowerCase().includes('insert')) {
@@ -51,9 +52,7 @@ if (process.env.NODE_ENV === 'test') {
       }
     });
   };
-  
   db.execute = db.query;
-  
 } else {
   // Use MySQL for production
   db = mysql.createPool({
@@ -65,3 +64,4 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 module.exports = db;
+module.exports.initTestTables = initTestTables;

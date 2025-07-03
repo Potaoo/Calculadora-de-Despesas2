@@ -11,13 +11,16 @@ global.console = {
   debug: jest.fn(),
 };
 
-// Cleanup do banco de dados SQLite após cada teste
-const fs = require('fs');
-const path = require('path');
+const db = require('../db');
+
+beforeAll(async () => {
+  if (db.initTestTables) {
+    await db.initTestTables();
+  }
+});
 
 beforeEach(async () => {
   // Limpar dados de teste do SQLite
-  const db = require('../db');
   if (db && db.query) {
     try {
       await db.query('DELETE FROM despesas');
@@ -30,7 +33,6 @@ beforeEach(async () => {
 
 afterAll(async () => {
   // Fechar conexão do SQLite
-  const db = require('../db');
   if (db && db.close) {
     try {
       await new Promise((resolve) => db.close(resolve));
@@ -38,16 +40,4 @@ afterAll(async () => {
       // Ignorar erros de fechamento
     }
   }
-  
-  // Remover arquivo de banco de teste com delay
-  setTimeout(() => {
-    const testDbPath = path.join(__dirname, '..', 'test.db');
-    if (fs.existsSync(testDbPath)) {
-      try {
-        fs.unlinkSync(testDbPath);
-      } catch (error) {
-        // Ignorar erros de remoção
-      }
-    }
-  }, 1000);
 }); 
