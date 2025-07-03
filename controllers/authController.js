@@ -38,6 +38,9 @@ async function register(req, res) {
     res.json({ sucesso: true });
   } catch (error) {
     console.error('Erro no registro:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ erro: 'E-mail já cadastrado' });
+    }
     res.status(500).json({ erro: 'Erro interno do servidor' });
   }
 }
