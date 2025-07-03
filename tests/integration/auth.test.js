@@ -4,13 +4,10 @@ const db = require('../../db');
 const { cleanupTestData, testData } = require('./testHelper');
 
 describe('Autenticação - Testes de Integração', () => {
-  beforeAll(async () => {
-    await cleanupTestData(db);
-  });
-
-  afterAll(async () => {
-    await cleanupTestData(db);
-    await db.end();
+  beforeEach(async () => {
+    // Limpar dados antes de cada teste
+    await db.query('DELETE FROM despesas');
+    await db.query('DELETE FROM usuarios');
   });
 
   describe('POST /api/register', () => {

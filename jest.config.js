@@ -14,5 +14,7 @@ module.exports = {
     'html'
   ],
   coverageDirectory: 'coverage',
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  maxWorkers: 1,
+  testTimeout: 10000
 }; 

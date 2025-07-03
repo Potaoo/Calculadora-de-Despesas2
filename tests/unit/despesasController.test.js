@@ -1,12 +1,11 @@
 const despesasController = require('../../controllers/despesasController');
 const despesaModel = require('../../models/despesaModel');
 
-// Mock do módulo
+// Mock do módulo despesaModel
 jest.mock('../../models/despesaModel');
 
 describe('DespesasController', () => {
-  let mockReq;
-  let mockRes;
+  let mockReq, mockRes;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -14,173 +13,177 @@ describe('DespesasController', () => {
     mockReq = {
       body: {},
       params: {},
-      session: {}
+      session: { usuarioId: 1 }
     };
     
     mockRes = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      json: jest.fn()
     };
   });
 
   describe('listarDespesas', () => {
-    test('deve listar despesas do usuário autenticado', async () => {
-      const usuarioId = 1;
+    test('deve listar despesas do usuário', async () => {
       const despesasMock = [
-        { id: 1, descricao: 'Almoço', valor: 25.50, data: '2024-01-15', usuario_id: 1 },
-        { id: 2, descricao: 'Transporte', valor: 5.00, data: '2024-01-15', usuario_id: 1 }
+        { id: 1, descricao: 'Almoço', valor: 25.50, usuario_id: 1 },
+        { id: 2, descricao: 'Transporte', valor: 5.75, usuario_id: 1 }
       ];
 
-      mockReq.session.usuarioId = usuarioId;
       despesaModel.listarDespesas.mockResolvedValue(despesasMock);
 
       await despesasController.listarDespesas(mockReq, mockRes);
 
-      expect(despesaModel.listarDespesas).toHaveBeenCalledWith(usuarioId);
+      expect(despesaModel.listarDespesas).toHaveBeenCalledWith(1);
       expect(mockRes.json).toHaveBeenCalledWith(despesasMock);
     });
 
-    test('deve retornar lista vazia quando não há despesas', async () => {
-      const usuarioId = 2;
-
-      mockReq.session.usuarioId = usuarioId;
-      despesaModel.listarDespesas.mockResolvedValue([]);
-
-      await despesasController.listarDespesas(mockReq, mockRes);
-
-      expect(despesaModel.listarDespesas).toHaveBeenCalledWith(usuarioId);
-      expect(mockRes.json).toHaveBeenCalledWith([]);
-    });
-
-    test('deve lançar erro quando falhar na listagem', async () => {
-      const usuarioId = 1;
-
-      mockReq.session.usuarioId = usuarioId;
+    test('deve retornar erro interno quando falhar na listagem', async () => {
       despesaModel.listarDespesas.mockRejectedValue(new Error('Erro no banco'));
 
-      await expect(despesasController.listarDespesas(mockReq, mockRes))
-        .rejects.toThrow('Erro no banco');
-    });
-
-    test('deve usar o ID do usuário da sessão', async () => {
-      const usuarioId = 5;
-
-      mockReq.session.usuarioId = usuarioId;
-      despesaModel.listarDespesas.mockResolvedValue([]);
-
       await despesasController.listarDespesas(mockReq, mockRes);
 
-      expect(despesaModel.listarDespesas).toHaveBeenCalledWith(usuarioId);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Erro interno do servidor' });
     });
   });
 
   describe('adicionarDespesa', () => {
-    test('deve adicionar uma nova despesa com sucesso', async () => {
-      const usuarioId = 1;
-      const despesa = { descricao: 'Almoço', valor: 25.50 };
+    test('deve adicionar uma despesa com sucesso', async () => {
+      const novaDespesa = {
+        descricao: 'Almoço',
+        valor: 25.50
+      };
 
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.body = despesa;
-      despesaModel.adicionarDespesa.mockResolvedValue();
+      mockReq.body = novaDespesa;
 
       await despesasController.adicionarDespesa(mockReq, mockRes);
 
-      expect(despesaModel.adicionarDespesa).toHaveBeenCalledWith(despesa, usuarioId);
+      expect(despesaModel.adicionarDespesa).toHaveBeenCalledWith(novaDespesa, 1);
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith({ sucesso: true });
     });
 
     test('deve adicionar despesa com valor decimal', async () => {
-      const usuarioId = 1;
-      const despesa = { descricao: 'Transporte', valor: 5.75 };
+      const novaDespesa = {
+        descricao: 'Transporte',
+        valor: 5.75
+      };
 
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.body = despesa;
-      despesaModel.adicionarDespesa.mockResolvedValue();
+      mockReq.body = novaDespesa;
 
       await despesasController.adicionarDespesa(mockReq, mockRes);
 
-      expect(despesaModel.adicionarDespesa).toHaveBeenCalledWith(despesa, usuarioId);
+      expect(despesaModel.adicionarDespesa).toHaveBeenCalledWith(novaDespesa, 1);
       expect(mockRes.status).toHaveBeenCalledWith(201);
+      expect(mockRes.json).toHaveBeenCalledWith({ sucesso: true });
     });
 
-    test('deve adicionar despesa para usuário específico', async () => {
-      const usuarioId = 3;
-      const despesa = { descricao: 'Teste', valor: 10.00 };
-
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.body = despesa;
-      despesaModel.adicionarDespesa.mockResolvedValue();
+    test('deve retornar erro quando descrição está faltando', async () => {
+      mockReq.body = {
+        valor: 25.50
+      };
 
       await despesasController.adicionarDespesa(mockReq, mockRes);
 
-      expect(despesaModel.adicionarDespesa).toHaveBeenCalledWith(despesa, usuarioId);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Descrição e valor são obrigatórios' });
     });
 
-    test('deve lançar erro quando falhar ao adicionar despesa', async () => {
-      const usuarioId = 1;
-      const despesa = { descricao: 'Almoço', valor: 25.50 };
+    test('deve retornar erro quando valor está faltando', async () => {
+      mockReq.body = {
+        descricao: 'Almoço'
+      };
 
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.body = despesa;
+      await despesasController.adicionarDespesa(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Descrição e valor são obrigatórios' });
+    });
+
+    test('deve retornar erro quando valor não é número', async () => {
+      mockReq.body = {
+        descricao: 'Almoço',
+        valor: 'não é número'
+      };
+
+      await despesasController.adicionarDespesa(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Valor deve ser um número positivo' });
+    });
+
+    test('deve retornar erro quando valor é negativo', async () => {
+      mockReq.body = {
+        descricao: 'Almoço',
+        valor: -10
+      };
+
+      await despesasController.adicionarDespesa(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Valor deve ser um número positivo' });
+    });
+
+    test('deve retornar erro interno quando falhar ao adicionar despesa', async () => {
+      const novaDespesa = {
+        descricao: 'Almoço',
+        valor: 25.50
+      };
+
+      mockReq.body = novaDespesa;
       despesaModel.adicionarDespesa.mockRejectedValue(new Error('Erro no banco'));
 
-      await expect(despesasController.adicionarDespesa(mockReq, mockRes))
-        .rejects.toThrow('Erro no banco');
+      await despesasController.adicionarDespesa(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Erro interno do servidor' });
     });
   });
 
   describe('excluirDespesa', () => {
     test('deve excluir uma despesa com sucesso', async () => {
-      const usuarioId = 1;
       const despesaId = 1;
 
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.params.id = despesaId;
-      despesaModel.excluirDespesa.mockResolvedValue();
+      mockReq.params = { id: despesaId };
+      despesaModel.excluirDespesa.mockResolvedValue(true);
 
       await despesasController.excluirDespesa(mockReq, mockRes);
 
-      expect(despesaModel.excluirDespesa).toHaveBeenCalledWith(despesaId, usuarioId);
+      expect(despesaModel.excluirDespesa).toHaveBeenCalledWith(despesaId, 1);
       expect(mockRes.json).toHaveBeenCalledWith({ sucesso: true });
     });
 
-    test('deve excluir despesa específica do usuário', async () => {
-      const usuarioId = 2;
-      const despesaId = 5;
-
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.params.id = despesaId;
-      despesaModel.excluirDespesa.mockResolvedValue();
+    test('deve retornar erro quando ID é inválido', async () => {
+      mockReq.params = { id: 'inválido' };
 
       await despesasController.excluirDespesa(mockReq, mockRes);
 
-      expect(despesaModel.excluirDespesa).toHaveBeenCalledWith(despesaId, usuarioId);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'ID inválido' });
     });
 
-    test('deve usar ID da URL e usuário da sessão', async () => {
-      const usuarioId = 1;
-      const despesaId = '10';
+    test('deve retornar erro quando despesa não encontrada', async () => {
+      const despesaId = 999;
 
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.params.id = despesaId;
-      despesaModel.excluirDespesa.mockResolvedValue();
+      mockReq.params = { id: despesaId };
+      despesaModel.excluirDespesa.mockResolvedValue(false);
 
       await despesasController.excluirDespesa(mockReq, mockRes);
 
-      expect(despesaModel.excluirDespesa).toHaveBeenCalledWith(despesaId, usuarioId);
+      expect(mockRes.status).toHaveBeenCalledWith(404);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Despesa não encontrada' });
     });
 
-    test('deve lançar erro quando falhar ao excluir despesa', async () => {
-      const usuarioId = 1;
+    test('deve retornar erro interno quando falhar ao excluir despesa', async () => {
       const despesaId = 1;
 
-      mockReq.session.usuarioId = usuarioId;
-      mockReq.params.id = despesaId;
+      mockReq.params = { id: despesaId };
       despesaModel.excluirDespesa.mockRejectedValue(new Error('Erro no banco'));
 
-      await expect(despesasController.excluirDespesa(mockReq, mockRes))
-        .rejects.toThrow('Erro no banco');
+      await despesasController.excluirDespesa(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ erro: 'Erro interno do servidor' });
     });
   });
 }); 

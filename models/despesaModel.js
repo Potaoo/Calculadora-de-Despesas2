@@ -6,16 +6,16 @@ async function listarDespesas(usuarioId) {
 }
 
 async function adicionarDespesa(despesa, usuarioId) {
-  await db.query('INSERT INTO despesas (descricao, valor, data, usuario_id) VALUES (?, ?, ?, ?)', [
+  await db.query('INSERT INTO despesas (descricao, valor, usuario_id) VALUES (?, ?, ?)', [
     despesa.descricao,
     despesa.valor,
-    new Date(),
     usuarioId
   ]);
 }
 
 async function excluirDespesa(id, usuarioId) {
-  await db.query('DELETE FROM despesas WHERE id = ? AND usuario_id = ?', [id, usuarioId]);
+  const [result] = await db.query('DELETE FROM despesas WHERE id = ? AND usuario_id = ?', [id, usuarioId]);
+  return result.affectedRows > 0;
 }
 
 module.exports = { listarDespesas, adicionarDespesa, excluirDespesa };

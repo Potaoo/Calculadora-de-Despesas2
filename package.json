@@ -10,7 +10,11 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --coverage --ci --watchAll=false"
   },
-  "keywords": ["despesas", "calculadora", "finanças"],
+  "keywords": [
+    "despesas",
+    "calculadora",
+    "finanças"
+  ],
   "author": "",
   "license": "ISC",
   "description": "Aplicação para controle de despesas pessoais",
@@ -18,11 +22,12 @@
     "bcrypt": "^5.1.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
-    "mysql2": "^3.14.0"
+    "mysql2": "^3.14.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^6.3.3",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
   }
 }

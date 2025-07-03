@@ -6,17 +6,13 @@ const { createAuthenticatedAgent, cleanupTestData } = require('./testHelper');
 describe('Despesas - Testes de Integração', () => {
   let authenticatedAgent;
 
-  beforeAll(async () => {
-    await cleanupTestData(db);
-  });
-
   beforeEach(async () => {
+    // Limpar dados antes de cada teste
+    await db.query('DELETE FROM despesas');
+    await db.query('DELETE FROM usuarios');
+    
+    // Criar agente autenticado
     authenticatedAgent = await createAuthenticatedAgent();
-  });
-
-  afterAll(async () => {
-    await cleanupTestData(db);
-    await db.end();
   });
 
   describe('GET /api/despesas', () => {
@@ -153,6 +149,7 @@ describe('Despesas - Testes de Integração', () => {
 
       // Obter o ID da despesa criada
       const response = await authenticatedAgent.get('/api/despesas');
+      expect(response.body.length).toBeGreaterThan(0);
       despesaId = response.body[0].id;
     });
 
@@ -198,10 +195,10 @@ describe('Despesas - Testes de Integração', () => {
 
     test('deve verificar se despesa pertence ao usuário', async () => {
       // Criar outro usuário
-      const outroAgent = await createAuthenticatedAgent('outro@email.com', 'senha123');
+      const segundoAgent = await createAuthenticatedAgent('segundo@email.com', 'senha123');
       
       // Tentar excluir despesa de outro usuário
-      const response = await outroAgent
+      const response = await segundoAgent
         .delete(`/api/despesas/${despesaId}`)
         .expect(404);
 
@@ -246,7 +243,7 @@ describe('Despesas - Testes de Integração', () => {
     });
 
     test('deve manter isolamento entre usuários', async () => {
-      // Criar despesa com primeiro usuário
+      // Criar despesa para primeiro usuário
       const despesa1 = {
         descricao: 'Despesa Usuário 1',
         valor: 25.00
@@ -260,6 +257,7 @@ describe('Despesas - Testes de Integração', () => {
       // Criar segundo usuário
       const segundoAgent = await createAuthenticatedAgent('segundo@email.com', 'senha123');
       
+      // Criar despesa para segundo usuário
       const despesa2 = {
         descricao: 'Despesa Usuário 2',
         valor: 30.00
