@@ -1,5 +1,5 @@
 const authController = require('../../controllers/authController');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const usuarioModel = require('../../models/usuarioModel');
 
 // Mock dos módulos

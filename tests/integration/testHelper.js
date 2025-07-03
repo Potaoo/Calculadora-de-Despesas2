@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../../app');
+const bcrypt = require('bcryptjs');
 
 // Helper para criar um agente de teste autenticado
 const createAuthenticatedAgent = async (email = 'test@email.com', senha = 'senha123') => {
@@ -33,7 +34,6 @@ const cleanupTestData = async (db) => {
 
 // Helper para criar usuário diretamente no banco
 const createTestUser = async (db, email = 'test@email.com', senha = 'senha123') => {
-  const bcrypt = require('bcrypt');
   const senhaCriptografada = await bcrypt.hash(senha, 10);
   
   const [result] = await db.query(

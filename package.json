@@ -19,7 +19,7 @@
   "license": "ISC",
   "description": "Aplicação para controle de despesas pessoais",
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "mysql2": "^3.14.0",
