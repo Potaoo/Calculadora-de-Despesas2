@@ -7,18 +7,18 @@ const dbMock = {
 };
 
 // Mock para resultados de query
-const mockQueryResult = (rows = [], insertId = null) => {
-  return [rows, { insertId }];
+const mockQueryResult = (rows = []) => {
+  return { rows };
 };
 
 // Mock para resultados de INSERT
 const mockInsertResult = (insertId) => {
-  return [{ insertId }, {}];
+  return { rows: [{ id: insertId }] };
 };
 
 // Mock para resultados de UPDATE/DELETE
 const mockUpdateResult = (affectedRows = 1) => {
-  return [{ affectedRows }, {}];
+  return { rowCount: affectedRows };
 };
 
 module.exports = {
