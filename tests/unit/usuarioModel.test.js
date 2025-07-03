@@ -30,7 +30,7 @@ describe('UsuarioModel', () => {
       const result = await usuarioModel.criarUsuario(nome, email, senhaCriptografada);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)',
+        'INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3)',
         [nome, email, senhaCriptografada]
       );
       expect(result).toBe(insertId);
@@ -77,7 +77,7 @@ describe('UsuarioModel', () => {
       const result = await usuarioModel.buscarPorEmail(email);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'SELECT * FROM usuarios WHERE email = ?',
+        'SELECT * FROM usuarios WHERE email = $1',
         [email]
       );
       expect(result).toEqual(usuarioMock);
@@ -92,7 +92,7 @@ describe('UsuarioModel', () => {
 
       expect(result).toBeUndefined();
       expect(dbMock.query).toHaveBeenCalledWith(
-        'SELECT * FROM usuarios WHERE email = ?',
+        'SELECT * FROM usuarios WHERE email = $1',
         [email]
       );
     });
