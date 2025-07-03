@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const usuarioModel = require('../../models/usuarioModel');
 
 // Mock dos módulos
-jest.mock('bcrypt');
+jest.mock('bcryptjs');
 jest.mock('../../models/usuarioModel');
 
 describe('AuthController', () => {
