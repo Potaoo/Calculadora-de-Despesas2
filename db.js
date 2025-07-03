@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
@@ -54,14 +54,20 @@ if (process.env.NODE_ENV === 'test') {
   };
   db.execute = db.query;
 } else {
-  // Use MySQL for production
-  db = mysql.createPool({
+  // Use PostgreSQL for production
+  const pool = new Pool({
     host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'Lcj.456baronesa',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'calculadora_despesas',
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
   });
+
+  db = {
+    query: (text, params) => pool.query(text, params),
+    execute: (text, params) => pool.query(text, params)
+  };
 }
 
 module.exports = db;
