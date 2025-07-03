@@ -31,7 +31,7 @@ describe('DespesaModel', () => {
       const result = await despesaModel.listarDespesas(usuarioId);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'SELECT * FROM despesas WHERE usuario_id = ?',
+        'SELECT * FROM despesas WHERE usuario_id = $1',
         [usuarioId]
       );
       expect(result).toEqual(despesasMock);
@@ -67,7 +67,7 @@ describe('DespesaModel', () => {
       await despesaModel.adicionarDespesa(despesa, usuarioId);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'INSERT INTO despesas (descricao, valor, usuario_id) VALUES (?, ?, ?)',
+        'INSERT INTO despesas (descricao, valor, usuario_id) VALUES ($1, $2, $3)',
         [despesa.descricao, despesa.valor, usuarioId]
       );
     });
@@ -81,7 +81,7 @@ describe('DespesaModel', () => {
       await despesaModel.adicionarDespesa(despesa, usuarioId);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'INSERT INTO despesas (descricao, valor, usuario_id) VALUES (?, ?, ?)',
+        'INSERT INTO despesas (descricao, valor, usuario_id) VALUES ($1, $2, $3)',
         [despesa.descricao, despesa.valor, usuarioId]
       );
     });
@@ -107,7 +107,7 @@ describe('DespesaModel', () => {
       const result = await despesaModel.excluirDespesa(despesaId, usuarioId);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'DELETE FROM despesas WHERE id = ? AND usuario_id = ?',
+        'DELETE FROM despesas WHERE id = $1 AND usuario_id = $2',
         [despesaId, usuarioId]
       );
       expect(result).toBe(true);

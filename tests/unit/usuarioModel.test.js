@@ -30,7 +30,7 @@ describe('UsuarioModel', () => {
       const result = await usuarioModel.criarUsuario(nome, email, senhaCriptografada);
 
       expect(dbMock.query).toHaveBeenCalledWith(
-        'INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3)',
+        'INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3) RETURNING id',
         [nome, email, senhaCriptografada]
       );
       expect(result).toBe(insertId);
