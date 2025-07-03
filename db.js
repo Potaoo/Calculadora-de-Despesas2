@@ -56,10 +56,11 @@ if (process.env.NODE_ENV === 'test') {
 } else {
   // Use MySQL for production
   db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'Lcj.456baronesa',
-    database: 'calculadora_despesas'
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'Lcj.456baronesa',
+    database: process.env.DB_NAME || 'calculadora_despesas',
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306
   });
 }
 
