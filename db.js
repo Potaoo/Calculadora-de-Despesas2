@@ -37,17 +37,17 @@ if (process.env.NODE_ENV === 'test') {
       if (sql.toLowerCase().includes('insert')) {
         this.run(sql, params, function(err) {
           if (err) reject(err);
-          else resolve([{ insertId: this.lastID }, { affectedRows: this.changes }]);
+          else resolve({ rows: [{ id: this.lastID }] });
         });
       } else if (sql.toLowerCase().includes('delete') || sql.toLowerCase().includes('update')) {
         this.run(sql, params, function(err) {
           if (err) reject(err);
-          else resolve([{ affectedRows: this.changes }, {}]);
+          else resolve({ rowCount: this.changes });
         });
       } else {
         this.all(sql, params, (err, rows) => {
           if (err) reject(err);
-          else resolve([rows, { affectedRows: rows ? rows.length : 0 }]);
+          else resolve({ rows });
         });
       }
     });
